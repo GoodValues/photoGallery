@@ -9,16 +9,16 @@ public class UserDTO {
 
 
     private Long id;
-    private String userName;
+    private String username;
     private String password;
     private String email;
     private Set<Role> roles;
     private Gallery gallery;
 
 
-    public UserDTO(Long id, String userName, String password, String email, Set<Role> roles, Gallery gallery) {
+    public UserDTO(Long id, String username, String password, String email, Set<Role> roles, Gallery gallery) {
         this.id = id;
-        this.userName = userName;
+        this.username = username;
         this.password = password;
         this.email = email;
         this.roles = roles;
@@ -37,12 +37,12 @@ public class UserDTO {
         this.id = id;
     }
 
-    public String getUserName() {
-        return userName;
+    public String getUsername() {
+        return username;
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getPassword() {
@@ -76,4 +76,6 @@ public class UserDTO {
     public void setGallery(Gallery gallery) {
         this.gallery = gallery;
     }
+
+
 }
