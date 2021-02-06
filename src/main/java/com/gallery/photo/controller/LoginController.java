@@ -1,5 +1,6 @@
 package com.gallery.photo.controller;
 
+import com.gallery.photo.model.Photo;
 import com.gallery.photo.model.User;
 import com.gallery.photo.model.dto.UserDTO;
 import com.gallery.photo.security.DTO.JwtTokenDTO;
@@ -23,6 +24,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Controller
 public class LoginController {
 
@@ -44,7 +48,7 @@ public class LoginController {
     }
 
     @ResponseBody
-    @PostMapping("/login")
+    @PostMapping("/logino")
     public ResponseEntity getTokenForUser(@RequestBody LoginDTO loginDTO){
 
         Authentication authentication =
@@ -58,6 +62,7 @@ public class LoginController {
 
     }
 
+
     @PostMapping(value = "/login", consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE})
     public String login(@ModelAttribute("user") UserDTO userDTO, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes) {
         Authentication authentication = manager.authenticate(
@@ -68,8 +73,21 @@ public class LoginController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String token = provider.generateToken(authentication);
         redirectAttributes.addFlashAttribute("user", userDTO);
-        return "redirect:/photos";
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String role = auth.getAuthorities().toString();
+
+        String targetUrl = "";
+        if(role.contains("ADMIN")) {
+            targetUrl = "redirect:/users";
+        } else if(role.contains("USER")) {
+            targetUrl = "redirect:/photos";
+        }
+        return targetUrl;
+
+//        return "redirect:/photos";
     }
+
 
     @GetMapping(value = "/photos")
     public String pictures(@ModelAttribute("user") UserDTO userDTO, BindingResult bindingResult, Model model) throws Exception {
@@ -77,15 +95,14 @@ public class LoginController {
 //        User user = (User)SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         User user = userService.getUserByUsername(userDTO.getUsername());
+        List<Photo> photos = user.getGallery().getPhotos().stream().distinct().collect(Collectors.toList());
 
-        model.addAttribute("photos", user.getGallery().getPhotos());
+        model.addAttribute("photos", photos);
         model.addAttribute("galleryId", user.getGallery().getId());
         model.addAttribute("username", user.getUsername());
         model.addAttribute("imgUrl", user.getGallery().getPhotos().stream().findFirst().map(photo -> photo.getImgUrl()).get());
 
-
         return "photos";
-
 
     }
 

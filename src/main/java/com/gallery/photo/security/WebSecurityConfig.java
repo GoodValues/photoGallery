@@ -13,10 +13,12 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 
 @Configuration
 @EnableWebSecurity
@@ -49,20 +51,50 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         return super.authenticationManagerBean();
     }
 
+    @Bean
+    public UserDetailsService userDetailsService() {
+        UserDetails user = User.withDefaultPasswordEncoder()
+                .username("user")
+                .password("user")
+                .roles("USER")
+                .build();
+
+        UserDetails admin = User.withDefaultPasswordEncoder()
+                .username("admin")
+                .password("admin")
+                .roles("ADMIN")
+                .build();
+
+
+        return new InMemoryUserDetailsManager(user, admin);
+    }
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
 
-        http.cors().and().csrf().disable()
+        http.httpBasic().and()
                 .authorizeRequests()
                 .antMatchers("/signUp").permitAll()
                 .antMatchers("/login").permitAll()
-                .anyRequest().permitAll()
+                .antMatchers("/photos").hasAnyAuthority("USER", "ADMIN")
+                .antMatchers("/photos/**").hasAnyAuthority("USER", "ADMIN")
+                .antMatchers("/userso").hasAuthority("ADMIN")
+                .antMatchers("/users").hasAuthority("ADMIN")
                 .and()
-                .exceptionHandling().authenticationEntryPoint(unauthorizedHandler)
-                .and()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+                .csrf().disable();
 
-        http.addFilterBefore(authTokenFilterBean(), UsernamePasswordAuthenticationFilter.class);
+//        http.cors().and().csrf().disable()
+//                .authorizeRequests()
+//                .antMatchers("/signUp").permitAll()
+//                .antMatchers("/login").permitAll()
+//                .antMatchers("/userso").permitAll()
+//                .anyRequest().permitAll()
+//                .and()
+//                .exceptionHandling().authenticationEntryPoint(unauthorizedHandler)
+//                .and()
+//                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+//
+//        http.addFilterBefore(authTokenFilterBean(), UsernamePasswordAuthenticationFilter.class);
 
     }
 }
