@@ -8,8 +8,6 @@ import com.gallery.photo.model.mapper.GalleryMapper;
 import com.gallery.photo.repository.GalleryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +37,7 @@ public class GalleryService {
 
     }
 
-    public void addPhotoToGallery(Photo photo,Gallery gallery) {
+    public void addPhotoToGallery(Photo photo, Gallery gallery) {
 
         List<Photo> photos = gallery.getPhotos();
         photos.add(photo);

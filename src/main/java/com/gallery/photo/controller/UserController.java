@@ -4,6 +4,7 @@ import com.gallery.photo.model.Gallery;
 import com.gallery.photo.model.Photo;
 import com.gallery.photo.model.dto.UserDTO;
 import com.gallery.photo.repository.GalleryRepository;
+import com.gallery.photo.repository.PhotoRepository;
 import com.gallery.photo.service.UserService;
 import com.gallery.photo.utils.FileUploadUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,13 +27,13 @@ public class UserController {
 
     UserService userService;
     GalleryRepository galleryRepository;
-
-    static int counter = 0;
+    PhotoRepository photoRepository;
 
     @Autowired
-    public UserController(UserService userService, GalleryRepository galleryRepository) {
+    public UserController(UserService userService, GalleryRepository galleryRepository, PhotoRepository photoRepository) {
         this.userService = userService;
         this.galleryRepository = galleryRepository;
+        this.photoRepository = photoRepository;
     }
 
     @GetMapping("/users")
@@ -55,6 +56,8 @@ public class UserController {
         Gallery gallery = user.getGallery();
         List<Photo> photos = gallery.getPhotos();
         model.addAttribute("photos", photos);
+        model.addAttribute("username", user.getUsername());
+        model.addAttribute("galleryId", user.getGallery().getId());
         return "photos";
     }
 
@@ -81,6 +84,13 @@ public class UserController {
 
         userService.saveUser(userDTO);
 
+        return "redirect:/userGallery/"+ id;
+    }
+
+    @GetMapping("/deletePhoto/{id}")
+    public String deletePhoto(@PathVariable Long id) {
+        photoRepository.deleteById(id);
+//        Long userId = photoRepository.findById(id).orElse(null).getGallery().getUser().getId();
         return "redirect:/userGallery/"+ id;
     }
 
